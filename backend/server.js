@@ -39,7 +39,7 @@ const PORT = process.env.PORT || 3000;
 app.use("/api/stripe", stripeRoutes);
 app.use("/api/stripe/webhook", stripeRoutes);
 
-app.use("/verify-purchase", verifyPurchaseRoutes);
+app.use("/api/services", verifyPurchaseRoutes);
 
 // ✅ Middleware CORS
 app.use(cors());
