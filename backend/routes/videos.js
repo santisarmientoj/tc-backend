@@ -1,46 +1,54 @@
 import express from "express";
-import Mux from "@mux/mux-node";
-import { verifyUserPurchase } from "../services/verifyPurchase.js";
-import { authenticateUser } from "../middlewares/auth.js";
+import admin from "firebase-admin";
+import mux from "@mux/mux-node";
 
 const router = express.Router();
+const { Video } = new mux();
 
-const { Video } = new Mux({
-  tokenId: process.env.MUX_TOKEN_ID,
-  tokenSecret: process.env.MUX_TOKEN_SECRET,
-});
+async function verifyCoursePurchase(userId, courseId) {
+  const db = admin.firestore();
 
-// 🎬 Endpoint para generar una URL de reproducción segura
-router.get("/:courseId/playback", authenticateUser, async (req, res) => {
+  const doc = await db.collection("purchases").doc(`${userId}_${courseId}`).get();
+
+  if (!doc.exists) return false;
+
+  const purchaseData = doc.data();
+  return purchaseData.status === "paid";
+}
+
+
+router.get("/:courseId/playback", async (req, res) => {
   try {
-    const { courseId } = req.params;
-    const userId = req.user.id;
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: "No token" });
 
-    // Verifica si el usuario ha comprado el curso
-    const hasAccess = await verifyUserPurchase(userId, courseId);
-    if (!hasAccess) {
-      return res.status(403).json({ message: "No tienes acceso a este curso" });
+    const token = authHeader.split(" ")[1];
+    const decoded = await admin.auth().verifyIdToken(token);
+
+    const userId = decoded.uid;
+    const courseId = req.params.courseId;
+
+    // 🔹 Verificar compra en Firestore
+    const hasPurchased = await verifyCoursePurchase(userId, courseId);
+    if (!hasPurchased) {
+      return res.status(403).json({ error: "No has comprado este curso" });
     }
 
-    // Busca el curso en la base de datos
-    const course = await getCourseFromDB(courseId); // reemplaza con tu método real
-    if (!course || !course.muxPlaybackId) {
-      return res.status(404).json({ message: "Video no encontrado" });
-    }
-
-    // Crea playback ID firmado
-    const playbackToken = await Video.PlaybackIds.create(course.muxPlaybackId, {
+    // 🔹 Generar playback token de Mux
+    const playbackId = "tu_playback_id_de_mux"; // 🔸 cambia esto por el ID real
+    const signedPlayback = await Video.PlaybackID.create(playbackId, {
       policy: "signed",
     });
 
-    const playbackUrl = `https://stream.mux.com/${playbackToken.id}.m3u8`;
-
+    const playbackUrl = `https://stream.mux.com/${signedPlayback.id}.m3u8`;
     res.json({ playbackUrl });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error al generar el token de reproducción" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al obtener el video" });
   }
 });
 
+
 export default router;
+
 

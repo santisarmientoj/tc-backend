@@ -7,6 +7,8 @@ import fs from "fs";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
+import stripeRoutes from "./routes/stripe.js";
+
 
 dotenv.config();
 
@@ -27,6 +29,9 @@ admin.initializeApp({
 });
 
 const db = admin.firestore();
+
+app.use("/api/stripe", stripeRoutes);
+app.use("/api/stripe/webhook", stripeRoutes);
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
