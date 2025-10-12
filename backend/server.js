@@ -144,6 +144,29 @@ app.get("/checkout-session", async (req, res) => {
   }
 });
 
+
+// 🔹 Integración con Mux para uploads de video
+import Mux from "@mux/mux-node";
+
+const { Video } = new Mux({
+  tokenId: process.env.MUX_TOKEN_ID,
+  tokenSecret: process.env.MUX_TOKEN_SECRET,
+});
+
+// Endpoint para crear un nuevo upload URL
+app.post("/create-upload", async (req, res) => {
+  try {
+    const upload = await Video.Uploads.create({
+      new_asset_settings: { playback_policy: "signed" },
+    });
+    res.json(upload);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error creating upload URL" });
+  }
+});
+
+
 // 🔹 Página de estado
 app.get("/", (req, res) => {
   res.send(`
