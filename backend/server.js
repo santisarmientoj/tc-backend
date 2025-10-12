@@ -30,13 +30,13 @@ admin.initializeApp({
 
 const db = admin.firestore();
 
-app.use("/api/stripe", stripeRoutes);
-app.use("/api/stripe/webhook", stripeRoutes);
-
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PORT = process.env.PORT || 3000;
+
+app.use("/api/stripe", stripeRoutes);
+app.use("/api/stripe/webhook", stripeRoutes);
 
 // ✅ Middleware CORS
 app.use(cors());
