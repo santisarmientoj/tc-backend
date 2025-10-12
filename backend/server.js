@@ -2,13 +2,13 @@ import express from "express";
 import bodyParser from "body-parser";
 import Stripe from "stripe";
 import dotenv from "dotenv";
-import admin from "firebase-admin";
 import fs from "fs";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import stripeRoutes from "./routes/stripe.js";
 import verifyPurchaseRoutes from "./routes/verifyPurchase.js";
+import admin, { db } from "./firebase-admin.js";
 
 
 dotenv.config();
@@ -16,20 +16,7 @@ dotenv.config();
 // 🔹 Inicializar Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// 🔹 Inicializar Firebase Admin
-const serviceAccount = {
-  type: "service_account",
-  project_id: process.env.GOOGLE_PROJECT_ID,
-  private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-  client_email: process.env.GOOGLE_CLIENT_EMAIL,
-  client_id: process.env.GOOGLE_CLIENT_ID,
-};
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
-
-const db = admin.firestore();
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
