@@ -1,4 +1,4 @@
-import { db } from "../db.js";
+import { db } from "./firebase-config.js";
 
 export async function verifyUserPurchase(userId, courseId) {
   const purchase = await db.purchases.findFirst({
