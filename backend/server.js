@@ -120,8 +120,8 @@ app.post("/create-checkout-session", async (req, res) => {
       mode: "payment",
       line_items: [{ price: priceId, quantity: 1 }],
       // ✅ Stripe redirige aquí después del pago
-      success_url: "http://localhost:3000/success.html?session_id={CHECKOUT_SESSION_ID}",
-      cancel_url: "http://localhost:3000/cancel.html",
+      success_url: "https://tutorialescristianos.app/success.html?session_id={CHECKOUT_SESSION_ID}",
+      cancel_url: "https://tutorialescristianos.app/cancel.html",
       metadata: { userId, courseId },
     });
 
