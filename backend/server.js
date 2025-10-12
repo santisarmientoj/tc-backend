@@ -8,6 +8,7 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import stripeRoutes from "./routes/stripe.js";
+import verifyPurchaseRoutes from "./routes/verifyPurchase.js";
 
 
 dotenv.config();
@@ -37,6 +38,8 @@ const PORT = process.env.PORT || 3000;
 
 app.use("/api/stripe", stripeRoutes);
 app.use("/api/stripe/webhook", stripeRoutes);
+
+app.use("/verify-purchase", verifyPurchaseRoutes);
 
 // ✅ Middleware CORS
 app.use(cors());
