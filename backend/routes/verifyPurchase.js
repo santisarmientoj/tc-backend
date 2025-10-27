@@ -1,3 +1,4 @@
+// /backend/routes/verifyPurchase.js
 import express from "express";
 import { verifyUserPurchase } from "../services/verifyPurchase.js";
 import { authenticateUser } from "../middleware/auth.js";
@@ -6,21 +7,25 @@ const router = express.Router();
 
 router.post("/verify-purchase", authenticateUser, async (req, res) => {
   try {
-    const userId = req.user.uid; // ← viene del token
+    const userId = req.user.uid; // ← obtenido del token de Firebase
     const { courseId } = req.body;
 
     if (!courseId) {
-      return res.status(400).json({ message: "Falta el ID del curso" });
+      return res.status(400).json({ accessGranted: false, message: "Falta el ID del curso" });
     }
 
     const hasAccess = await verifyUserPurchase(userId, courseId);
 
-    if (hasAccess) return res.json({ accessGranted: true });
-    return res.status(403).json({ accessGranted: false });
+    if (hasAccess) {
+      return res.json({ accessGranted: true });
+    } else {
+      return res.status(403).json({ accessGranted: false, message: "No tienes acceso a este curso" });
+    }
   } catch (error) {
     console.error("Error en verify-purchase:", error);
-    res.status(500).json({ message: "Error del servidor" });
+    res.status(500).json({ accessGranted: false, message: "Error del servidor" });
   }
 });
 
 export default router;
+

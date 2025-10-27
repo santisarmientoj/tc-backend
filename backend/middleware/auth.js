@@ -1,19 +1,23 @@
+// /backend/middleware/auth.js
 import admin from "../firebase-admin.js";
 
 export async function authenticateUser(req, res, next) {
   try {
     const authHeader = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ message: "Token no proporcionado" });
+    if (!authHeader?.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Token no proporcionado o malformado" });
     }
 
     const token = authHeader.split(" ")[1];
 
-    // ✅ Verificamos el ID token con Firebase Admin (no con jwt.verify)
+    // Verificamos el token con Firebase Admin
     const decodedToken = await admin.auth().verifyIdToken(token);
 
-    // Guardamos los datos del usuario en la request
+    if (!decodedToken || !decodedToken.uid) {
+      return res.status(403).json({ message: "Token inválido o sin UID" });
+    }
+
     req.user = decodedToken;
     next();
   } catch (error) {
@@ -21,6 +25,7 @@ export async function authenticateUser(req, res, next) {
     return res.status(403).json({ message: "Token inválido o expirado" });
   }
 }
+
 
 
 
