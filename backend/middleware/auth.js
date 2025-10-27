@@ -1,4 +1,4 @@
-import admin from "firebase-admin";
+import admin from "../firebase-admin.js";
 
 export async function authenticateUser(req, res, next) {
   try {
@@ -10,15 +10,17 @@ export async function authenticateUser(req, res, next) {
 
     const token = authHeader.split(" ")[1];
 
-    // 🔥 Verifica token de Firebase directamente
+    // ✅ Verificamos el ID token con Firebase Admin (no con jwt.verify)
     const decodedToken = await admin.auth().verifyIdToken(token);
 
+    // Guardamos los datos del usuario en la request
     req.user = decodedToken;
     next();
   } catch (error) {
-    console.error("Error al autenticar usuario Firebase:", error.message);
+    console.error("Error al autenticar usuario:", error.message);
     return res.status(403).json({ message: "Token inválido o expirado" });
   }
 }
+
 
 
