@@ -9,6 +9,7 @@ import { fileURLToPath } from "url";
 import stripeRoutes from "./routes/stripe.js";
 import verifyPurchaseRoutes from "./routes/verifyPurchase.js";
 import admin, { db } from "./firebase-admin.js";
+import videosRouter from "./routes/videos/playback-token.js";
 
 dotenv.config();
 
@@ -72,7 +73,7 @@ app.use(express.json());
 app.use("/api/stripe", stripeRoutes);
 app.use("/api/stripe/webhook", stripeRoutes);
 app.use("/api/verifyPurchase", verifyPurchaseRoutes);
-//app.use("/api/services", verifyPurchaseRoutes);
+app.use("/api/videos/playback-token", videosRouter);
 
 // ✅ Servir archivos estáticos desde el frontend
 app.use(express.static(path.join(__dirname, "../frontend")));
