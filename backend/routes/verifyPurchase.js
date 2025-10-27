@@ -5,9 +5,10 @@ import { authenticateUser } from "../middleware/auth.js";
 
 const router = express.Router();
 
-router.post("/verify-purchase", authenticateUser, async (req, res) => {
+// 👇 Ruta raíz (sin repetir /verify-purchase)
+router.post("/", authenticateUser, async (req, res) => {
   try {
-    const userId = req.user.uid; // ← obtenido del token de Firebase
+    const userId = req.user.uid;
     const { courseId } = req.body;
 
     if (!courseId) {
