@@ -10,47 +10,42 @@ import stripeRoutes from "./routes/stripe.js";
 import verifyPurchaseRoutes from "./routes/verifyPurchase.js";
 import admin, { db } from "./firebase-admin.js";
 
-
 dotenv.config();
 
-// 🔹 Inicializar Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
-
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PORT = process.env.PORT || 3000;
 
-app.use("/api/stripe", stripeRoutes);
-app.use("/api/stripe/webhook", stripeRoutes);
+// ✅ APLICA CORS ANTES DE LAS RUTAS
+app.use(cors({
+  origin: [
+    "https://www.tutorialescristianos.app",
+    "https://tutorialescristianos.app"
+  ],
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 
-app.use("/api/services", verifyPurchaseRoutes);
+// ✅ Asegura que responda a peticiones preflight (OPTIONS)
+app.options("*", cors());
 
-// ✅ Middleware CORS
-app.use(cors());
-
-// ⚠️ El webhook NECESITA raw body (antes de express.json)
+// ⚠️ El webhook NECESITA raw body (debe ir antes de express.json)
 app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, res) => {
   const sig = req.headers["stripe-signature"];
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(
-      req.body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET
-    );
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
     console.error("⚠️ Webhook error:", err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // Manejar eventos de Stripe
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
-
     const userId = session.metadata.userId;
     const courseId = session.metadata.courseId;
 
@@ -73,11 +68,15 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, r
 // ✅ JSON middleware para los demás endpoints
 app.use(express.json());
 
-// ✅ Servir archivos estáticos desde "../frontend"
+// ✅ Rutas después de los middlewares
+app.use("/api/stripe", stripeRoutes);
+app.use("/api/stripe/webhook", stripeRoutes);
+app.use("/api/services", verifyPurchaseRoutes);
+
+// ✅ Servir archivos estáticos desde el frontend
 app.use(express.static(path.join(__dirname, "../frontend")));
 
-
-// ✅ Rutas explícitas para HTML de éxito, cancelación y dashboard
+// ✅ Rutas HTML
 app.get("/success.html", (req, res) => {
   res.sendFile(path.join(__dirname, "frontend", "success.html"));
 });
