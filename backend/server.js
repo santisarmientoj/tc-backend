@@ -71,7 +71,7 @@ app.use(express.json());
 // ✅ Rutas después de los middlewares
 app.use("/api/stripe", stripeRoutes);
 app.use("/api/stripe/webhook", stripeRoutes);
-app.use("/api/verify-purchase", verifyPurchaseRoutes);
+app.use("/api/verifyPurchase", verifyPurchaseRoutes);
 //app.use("/api/services", verifyPurchaseRoutes);
 
 // ✅ Servir archivos estáticos desde el frontend
